@@ -1,0 +1,9 @@
+{
+  "zosversion": "2.2",
+  "name": "axonomy-kovan",
+  "version": "1.0.0",
+  "contracts": {
+    "AxonToken": "AxonToken",
+    "Airdrop": "Airdrop"
+  }
+}
