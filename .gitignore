@@ -1,0 +1,11 @@
+node_modules
+build
+.zos.session
+.DS_Store
+zos.*.json
+zos.json
+package-lock.json
+env_pri.sh
+makefile
+backup
+flat

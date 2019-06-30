@@ -1,0 +1,45 @@
+{
+  "name": "axonomy",
+  "version": "1.0.0",
+  "description": "ERC20 token for axonomy.",
+  "main": "index.js",
+  "scripts": {
+    "start-ganache": "ganache-cli -p 7545 -d -q -v",
+    "check-ropsten": "truffle exec index.js --network ropsten",
+    "check-kovan": "truffle exec index.js --network kovan",
+    "check": "truffle exec index.js --network local",
+    "clean": "rimraf build zos.dev*.json zos.kovan.json zos.ropsten.json zos.json",
+    "test": "npm-run-all -s clean zos-init truffle-migrate truffle-test",
+    "zos-init": "zos init axonomy 1.0.0",
+    "truffle-migrate": "truffle migrate --network local",
+    "truffle-test": "truffle test --network local",
+    "test-ropsten": "npm-run-all -s clean zos-init truffle-migrate-ropsten truffle-test-ropsten",
+    "truffle-migrate-ropsten": "truffle migrate --network ropsten",
+    "truffle-test-ropsten": "truffle test --network ropsten",
+    "test-kovan": "npm-run-all -s clean zos-init truffle-migrate-kovan truffle-test-kovan",
+    "truffle-migrate-kovan": "truffle migrate --network kovan",
+    "truffle-test-kovan": "truffle test --network kovan"
+  },
+  "keywords": [],
+  "author": "aceport",
+  "license": "ISC",
+  "dependencies": {
+    "bignumber.js": "^9.0.0",
+    "chai": "^4.2.0",
+    "chai-bignumber": "^3.0.0",
+    "dotenv": "^8.0.0",
+    "openzeppelin-eth": "^2.1.3",
+    "truffle": "^5.0.4",
+    "truffle-flattener": "^1.4.0",
+    "truffle-hdwallet-provider": "^1.0.11",
+    "zos": "^2.2.3",
+    "zos-lib": "^2.2.3"
+  },
+  "devDependencies": {
+    "ganache-cli": "^6.4.3",
+    "mocha-logger": "^1.0.6",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^2.6.3",
+    "sol-merger": "^0.1.4"
+  }
+}
