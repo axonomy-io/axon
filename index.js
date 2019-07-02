@@ -76,7 +76,7 @@ async function main() {
   version = await AirdropInstance.version();
   console.log(`Airdrop(${version}):   ${network}:${AirdropInstance.address}`);
 
-  if (network !== 'mainnet') {
+  if (network === 'local') {
     // 1. Whitelist Management
     let white_address = process.env.PROXY;
     // Remove whitelist
@@ -110,6 +110,14 @@ async function main() {
     } else {
       console.log('Not enough allowance!');
     }
+  }
+
+  if (network === 'local') {
+    let revenue = web3.utils.toWei('11021.7688702927', 'ether');
+    let difficulty = web3.utils.toWei('0.028888', 'ether');
+    let alpha = web3.utils.toWei('1', 'ether');
+    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), {from: process.env.OWNER});
+    console.log(total);
   }
 }
 
