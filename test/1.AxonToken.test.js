@@ -189,16 +189,17 @@ contract('AxonToken', async(accounts) => {
       assert.equal(balance.toString(), amount.toFixed());
     });
 
-    /*
-    it('it should not let me transfer tokens to myself', async function() {
-      var hasError = true;
-      try {
-        await this.token.transfer(process.env.OP_ADDRESS, 20, {from: process.env.OP_ADDRESS})
-        hasError = false;
-      } catch(err) { }
-      assert.equal(true, hasError, "Function not throwing exception on transfer to self");
+    it('should multisend right token', async function() {
+      const to_address = process.env.B_ADDRESS;
+      const amount = toWei(50);
+
+      const balance_before = await this.token.balanceOf(to_address);
+      await this.token.multisend([to_address], [toHex(amount)], {from: process.env.OP_ADDRESS});
+      const balance_after = await this.token.balanceOf(to_address);
+      const balance = balance_after - balance_before;
+
+      assert.equal(balance.toString(), amount.toFixed());
     });
-    */
 
     it('it should not let someone transfer tokens they do not have', async function() {
       var hasError = true;

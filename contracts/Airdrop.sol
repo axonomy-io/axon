@@ -6,11 +6,12 @@ import "openzeppelin-eth/contracts/ownership/Ownable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./Whitelisted.sol";
 
+
 contract Airdrop is Initializable, Ownable, Whitelisted {
     using SafeMath for uint256;
 
     event LogTokenMultiSent(address indexed token, uint256 total);
-    event LogGetToken(address indexed token, address indexed receiver, uint256 amount, bool result);
+    event LogSendToken(address indexed token, address indexed receiver, uint256 amount, bool result);
 
     function initialize(
         address _owner_address
@@ -38,9 +39,9 @@ contract Airdrop is Initializable, Ownable, Whitelisted {
         uint256 i = 0;
         while (i < _recipients.length) {
             bool result = token.transferFrom(msg.sender, _recipients[i], uint256(_values[i]));
-            emit LogGetToken(_token_address, _recipients[i], _values[i], result);
+            emit LogSendToken(_token_address, _recipients[i], _values[i], result);
             if (result == false) { break; }
-            total = total.add(_values[i]);
+            total = total.add(uint256(_values[i]));
             i += 1;
         }
         emit LogTokenMultiSent(_token_address, total);

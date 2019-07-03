@@ -1,6 +1,7 @@
 const AxonToken = artifacts.require('AxonToken');
 const Airdrop = artifacts.require('Airdrop');
 const { toHex } = web3.utils;
+const BigNumber = require("bignumber.js");
 
 require('dotenv').config();
 
@@ -50,21 +51,31 @@ async function TokenTransfer(contract_instance, from_address, to_address, amount
 }
 
 
-async function main() {
+async function minedPercentage(AxonTokenInstance) {
+  let total = await AxonTokenInstance.invest_mined();
+  let mined_percentage = BigNumber(total).times(100).div('1e+18').div('7e+8');
+  return parseFloat(mined_percentage.toString()).toFixed(4);
+}
 
+
+async function main() {
   let network = process.argv[5];
   let address = {
     'ropsten': {
-      'AxonToken': '0x68b6E45caf2E0EB51248855DE97867ff982156Fc',
-      'Airdrop': '0x82D32B13645D4CA1FdAEa54AfF940cdc8bcEb067'
+      'AxonToken': '0x2193BA08EB51e673a74Ae3D389083C1bc38e00b6',
+      'Airdrop': '0xbF49eb27ffFad3Fc1B9285E86367e2e2b2Ec0546'
     },
     'mainnet': {
       'AxonToken': '0x4F2742D3BF257035caE4666e0a6fed67713e0CC5',
       'Airdrop': '0x8E6217dBFb6c810e8Eb378789F06871af91Bd108'
     },
     'kovan': {
-      'AxonToken': '0x7dB6399e4098390c5c6becB579a1dFF3D1cAb3B7',
-      'Airdrop': '0x41e82802f5e7FCb9B2D1DA4386fe6cEBd3aaA5e6'
+      'AxonToken': '0xC51544048B4F25eeCCaaa865809921294B70B61a',
+      'Airdrop': '0x71581E07Ea6DA3b4713FC27D93C30C7369a6779E'
+    },
+    'local': {
+      'AxonToken': '0xA2f89227DEBFBC48e1187ad75aFbeB68bb193738',
+      'Airdrop': '0x53f2032E106Dd00d7C373FfE870B9947831Ed46f'
     }
   };
 
@@ -72,11 +83,13 @@ async function main() {
   let AxonTokenInstance = await AxonToken.at(address[network]['AxonToken']);
   let AirdropInstance = await Airdrop.at(address[network]['Airdrop']);
   version = await AxonTokenInstance.version();
-  console.log(`AxonToken(${version}): ${network}:${AxonTokenInstance.address}`);
+  console.log(`AxonToken(${version}):    ${network}:${AxonTokenInstance.address}`);
   version = await AirdropInstance.version();
-  console.log(`Airdrop(${version}):   ${network}:${AirdropInstance.address}`);
+  console.log(`Airdrop(${version}):      ${network}:${AirdropInstance.address}`);
+  let mined_percentage = await minedPercentage(AxonTokenInstance);
+  console.log(`Mined percentage: ${mined_percentage}%`);
 
-  if (network === 'local') {
+  if (network === 'test') {
     // 1. Whitelist Management
     let white_address = process.env.PROXY;
     // Remove whitelist
@@ -112,7 +125,7 @@ async function main() {
     }
   }
 
-  if (network === 'local') {
+  if (network === 'test') {
     let revenue = web3.utils.toWei('11021.7688702927', 'ether');
     let difficulty = web3.utils.toWei('0.028888', 'ether');
     let alpha = web3.utils.toWei('1', 'ether');
