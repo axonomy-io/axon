@@ -30,7 +30,7 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
     address private b_address;
 
     // Event
-    event Revenue(uint256 difficulty, uint256 revenue, uint256 alpha, uint256 total_mined, uint256 time);
+    event LogRevenue(uint256 difficulty, uint256 revenue, uint256 alpha, uint256 total_mined, uint256 invest_mined);
     event LogTokenMultiSent(address indexed sender, uint256 total);
     event LogSendToken(address indexed sender, address indexed receiver, uint256 amount, bool result);
 
@@ -95,7 +95,6 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         require(_difficulty > 0);
         require(_alpha >= 0);
 
-        uint256 total_cap = cap();
         uint256 precision = 10 ** uint256(decimals());
         total_revenue = total_revenue.add(_revenue);
         
@@ -111,10 +110,12 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         uint256 total_sku_project = total_sku.sub(total_sku_user);
         if (total_sku_project > 0) { _mint(b_address, total_sku_project); }
 
-        uint256 total_community_vote = 0;
-        if (total_community_vote_amount <= total_cap.mul(vote_percentage).div(1000)) {
-            total_community_vote = total_community_invest.div(10);
-            total_community_vote_amount = total_community_vote_amount.add(total_community_vote);
+        uint256 total_community_vote = total_community_invest.div(10);
+        uint256 next = total_community_vote_amount.add(total_community_vote);
+        if (next <= cap().mul(vote_percentage).div(1000)) {
+            total_community_vote_amount = next;
+        } else {
+            total_community_vote = 0;
         }
         uint256 c_amount = total_community_vote.add(total_sku_user);
         if (c_amount > 0) { _mint(c_address, c_amount); }
@@ -123,15 +124,14 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         if (total_team > 0) { _mint(team_address, total_team); }
 
         uint256 total_mined = total_community_invest.add(total_community_vote).add(total_team);
-        emit Revenue(_difficulty, _revenue, _alpha, total_mined, now);
+        emit LogRevenue(_difficulty, _revenue, _alpha, total_mined, total_community_invest);
 
         return total_mined;
     }
 
 
     function multisend(address[] memory _recipients, uint256[] memory _values)
-    public returns (uint256)
-    {
+    public returns (uint256) {
         require(_recipients.length == _values.length);
         require(_recipients.length > 0);
         // require(_recipients.length <= 120);

@@ -130,7 +130,7 @@ contract('AxonToken', async(accounts) => {
       const total_mined = toWei(92);
       assert.equal(logs.length, 5, 'No Revenue Event emitted');
       // console.log(logs[4]);
-      assert.equal(logs[4].event, 'Revenue');
+      assert.equal(logs[4].event, 'LogRevenue');
       assert.equal(logs[4].args.total_mined.toString(), total_mined.toFixed());
       assert.equal(logs[4].args.difficulty.toString(), _difficulty.toFixed());
       assert.equal(logs[4].args.revenue.toString(), _revenue.toFixed());
