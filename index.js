@@ -62,20 +62,20 @@ async function main() {
   let network = process.argv[5];
   let address = {
     'ropsten': {
-      'AxonToken': '0x2193BA08EB51e673a74Ae3D389083C1bc38e00b6',
-      'Airdrop': '0xbF49eb27ffFad3Fc1B9285E86367e2e2b2Ec0546'
+      'AxonToken': '0x6eC9314C55847Ef7AE8a42547C9988c7201d3B91',
+      'Airdrop': '0x8171ba253D472dc872402d8Ac6484bb6e01136ab'
     },
     'mainnet': {
       'AxonToken': '0x4F2742D3BF257035caE4666e0a6fed67713e0CC5',
       'Airdrop': '0x8E6217dBFb6c810e8Eb378789F06871af91Bd108'
     },
     'kovan': {
-      'AxonToken': '0xC51544048B4F25eeCCaaa865809921294B70B61a',
-      'Airdrop': '0x71581E07Ea6DA3b4713FC27D93C30C7369a6779E'
+      'AxonToken': '0x122c7ECf66CE4CE5D9e1eF97291aC5Dea1D478a8',
+      'Airdrop': '0x8Cf74994e7fD7A5756b7F3FEA06202FB4330b2E5'
     },
     'local': {
-      'AxonToken': '0xA2f89227DEBFBC48e1187ad75aFbeB68bb193738',
-      'Airdrop': '0x53f2032E106Dd00d7C373FfE870B9947831Ed46f'
+      'AxonToken': '0x911626Bd91d6FE1138f9eDcF366f03a4c5e276af',
+      'Airdrop': '0xD4F4F2a760B9F25F91019A7ed98f46761f2ee2CE'
     }
   };
 
@@ -88,6 +88,9 @@ async function main() {
   console.log(`Airdrop(${version}):      ${network}:${AirdropInstance.address}`);
   let mined_percentage = await minedPercentage(AxonTokenInstance);
   console.log(`Mined percentage: ${mined_percentage}%`);
+
+  // let current_difficulty = await AxonTokenInstance.current_difficulty;
+  // console.log(`Current difficulty: ${current_difficulty}`);
 
   if (network === 'test') {
     // 1. Whitelist Management
@@ -125,7 +128,8 @@ async function main() {
     }
   }
 
-  if (network === 'test') {
+  // Mine
+  if (network === 'local') {
     let revenue = web3.utils.toWei('11021.7688702927', 'ether');
     let difficulty = web3.utils.toWei('0.028888', 'ether');
     let alpha = web3.utils.toWei('1', 'ether');

@@ -81,6 +81,14 @@ contract('AxonToken', async(accounts) => {
     it('percentage should be correct', async function() {
       await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), {from: process.env.OWNER});
 
+      let current_difficulty = await this.token.current_difficulty();
+      assert.equal(current_difficulty.toString(), _difficulty.toFixed());
+      
+      let difficulty_list = await this.token.get_difficulty_list();
+      for (let item of difficulty_list) {
+        console.log(item.toString());
+      }
+
       // fundation asset: 10%
       const balance_foundation = await this.token.balanceOf(_foundation_address);
       const expected_foundation = BigNumber('0.1e+27');

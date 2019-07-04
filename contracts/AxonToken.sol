@@ -13,15 +13,15 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
     uint256 private total_revenue;
     uint256 private total_invest_mined;
     uint256 private total_community_vote_amount;
+    uint256[] public difficulty_list;
+    uint256 public current_difficulty;
 
-    // Token Distribution
-    uint256 private op_percentage;
-    uint256 private foundation_percentage;
-    uint256 private team_percentage;
-    uint256 private mining_percentage;
-    uint256 private vote_percentage;
-
-    // Token Address
+    // Token Distribution and Pool Address
+    // op_percentage               : 3.7%
+    // foundation_percentage       : 10%
+    // team_percentage             : 15%
+    // mining_percentage           : 70%
+    // vote_percentage             : 1.3%
     address private op_address;
     address private foundation_address;
     address private team_address;
@@ -45,11 +45,7 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         total_community_vote_amount = 0;
         total_invest_mined          = 0;
         total_revenue               = 0;
-        op_percentage               = 37;  // 3.7%
-        foundation_percentage       = 100; // 10%
-        team_percentage             = 150; // 15%
-        mining_percentage           = 700; // 70%
-        vote_percentage             = 13;  // %1.3
+        current_difficulty          = 0;
 
         ERC20Capped.initialize(_cap, _owner_address);
         ERC20Pausable.initialize(_owner_address);
@@ -62,8 +58,8 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         pool_address = _pool_address;
         b_address = _b_address;
 
-        _mint(op_address, _cap.mul(op_percentage).div(1000));
-        _mint(foundation_address, _cap.mul(foundation_percentage).div(1000));
+        _mint(op_address, _cap.mul(37).div(1000)); // 3.7%
+        _mint(foundation_address, _cap.mul(100).div(1000)); // 10%
     }
 
 
@@ -83,6 +79,11 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
     }
 
 
+    function get_difficulty_list() public view returns (uint256[] memory) {
+        return difficulty_list;
+    }
+
+
     /**
      * @dev Mined by revenue
      * @param _difficulty Difficulty of the mining period (*10^decimals)
@@ -91,9 +92,14 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
      */
     function mine(uint256 _difficulty, uint256 _revenue, uint256 _alpha)
     public onlyWhitelisted returns (uint256) {
-        require(_revenue > _difficulty);
-        require(_difficulty > 0);
         require(_alpha >= 0);
+        require(_revenue > _difficulty);
+        require(_difficulty >= current_difficulty);
+
+        if (current_difficulty != _difficulty) {
+            difficulty_list.push(_difficulty);
+        }
+        current_difficulty = _difficulty;
 
         uint256 precision = 10 ** uint256(decimals());
         total_revenue = total_revenue.add(_revenue);
@@ -112,7 +118,7 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
 
         uint256 total_community_vote = total_community_invest.div(10);
         uint256 next = total_community_vote_amount.add(total_community_vote);
-        if (next <= cap().mul(vote_percentage).div(1000)) {
+        if (next <= cap().mul(13).div(1000)) {
             total_community_vote_amount = next;
         } else {
             total_community_vote = 0;
@@ -120,7 +126,7 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         uint256 c_amount = total_community_vote.add(total_sku_user);
         if (c_amount > 0) { _mint(c_address, c_amount); }
 
-        uint256 total_team = total_community_invest.mul(team_percentage).div(mining_percentage);
+        uint256 total_team = total_community_invest.mul(15).div(70);
         if (total_team > 0) { _mint(team_address, total_team); }
 
         uint256 total_mined = total_community_invest.add(total_community_vote).add(total_team);
@@ -153,6 +159,7 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
 
 
     function axonburn(uint256 value) public returns (bool) {
+        require(value > 0);
         return transfer(address(0), value);
     }
 }
