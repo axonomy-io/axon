@@ -5,6 +5,25 @@ const BigNumber = require("bignumber.js");
 
 require('dotenv').config();
 
+const address = {
+  'ropsten': {
+    'AxonToken': '0x6eC9314C55847Ef7AE8a42547C9988c7201d3B91',
+    'Airdrop': '0x8171ba253D472dc872402d8Ac6484bb6e01136ab'
+  },
+  'mainnet': {
+    'AxonToken': '0x4F2742D3BF257035caE4666e0a6fed67713e0CC5',
+    'Airdrop': '0x8E6217dBFb6c810e8Eb378789F06871af91Bd108'
+  },
+  'kovan': {
+    'AxonToken': '0x122c7ECf66CE4CE5D9e1eF97291aC5Dea1D478a8',
+    'Airdrop': '0x8Cf74994e7fD7A5756b7F3FEA06202FB4330b2E5'
+  },
+  'local': {
+    'AxonToken': '0x7200366fdd50AD7c7dD7f40c8719a2A66FCEd50f',
+    'Airdrop': '0x0e165Ce7162bd4663Bc7d66c6eFbF3Ddcbf2adD9'
+  }
+};
+
 
 async function addWhitelisted(contract_instance, white_address) {  
   let result = await contract_instance.isWhitelisted(white_address);
@@ -57,40 +76,28 @@ async function minedPercentage(AxonTokenInstance) {
   return parseFloat(mined_percentage.toString()).toFixed(4);
 }
 
+async function meta(AxonTokenInstance, AirdropInstance, network) {
+  let version = await AxonTokenInstance.version();
+  console.log(`AxonToken(${version}):      ${network}:${AxonTokenInstance.address}`);
+  version = await AirdropInstance.version();
+  console.log(`Airdrop(${version}):        ${network}:${AirdropInstance.address}`);
+  let mined_percentage = await minedPercentage(AxonTokenInstance);
+  console.log(`Mined percentage:   ${mined_percentage}%`);
+
+  let current_difficulty = await AxonTokenInstance.current_difficulty();
+  console.log(`Current difficulty: ${current_difficulty}`);
+  let difficulty_list = await AxonTokenInstance.get_difficulty_list();
+  for (let item of difficulty_list) {
+    console.log(item.toString());
+  }
+}
+
 
 async function main() {
   let network = process.argv[5];
-  let address = {
-    'ropsten': {
-      'AxonToken': '0x6eC9314C55847Ef7AE8a42547C9988c7201d3B91',
-      'Airdrop': '0x8171ba253D472dc872402d8Ac6484bb6e01136ab'
-    },
-    'mainnet': {
-      'AxonToken': '0x4F2742D3BF257035caE4666e0a6fed67713e0CC5',
-      'Airdrop': '0x8E6217dBFb6c810e8Eb378789F06871af91Bd108'
-    },
-    'kovan': {
-      'AxonToken': '0x122c7ECf66CE4CE5D9e1eF97291aC5Dea1D478a8',
-      'Airdrop': '0x8Cf74994e7fD7A5756b7F3FEA06202FB4330b2E5'
-    },
-    'local': {
-      'AxonToken': '0x911626Bd91d6FE1138f9eDcF366f03a4c5e276af',
-      'Airdrop': '0xD4F4F2a760B9F25F91019A7ed98f46761f2ee2CE'
-    }
-  };
-
-  let version = '';
   let AxonTokenInstance = await AxonToken.at(address[network]['AxonToken']);
   let AirdropInstance = await Airdrop.at(address[network]['Airdrop']);
-  version = await AxonTokenInstance.version();
-  console.log(`AxonToken(${version}):    ${network}:${AxonTokenInstance.address}`);
-  version = await AirdropInstance.version();
-  console.log(`Airdrop(${version}):      ${network}:${AirdropInstance.address}`);
-  let mined_percentage = await minedPercentage(AxonTokenInstance);
-  console.log(`Mined percentage: ${mined_percentage}%`);
-
-  // let current_difficulty = await AxonTokenInstance.current_difficulty;
-  // console.log(`Current difficulty: ${current_difficulty}`);
+  await meta(AxonTokenInstance, AirdropInstance, network);
 
   if (network === 'test') {
     // 1. Whitelist Management
@@ -129,12 +136,20 @@ async function main() {
   }
 
   // Mine
-  if (network === 'local') {
+  if (network === 'kovan') {
     let revenue = web3.utils.toWei('11021.7688702927', 'ether');
     let difficulty = web3.utils.toWei('0.028888', 'ether');
     let alpha = web3.utils.toWei('1', 'ether');
     let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), {from: process.env.OWNER});
-    console.log(total);
+    // console.log(total);
+  }
+
+  if (network === 'local') {
+    let revenue = web3.utils.toWei('50000000', 'ether');
+    let difficulty = web3.utils.toWei('5', 'ether');
+    let alpha = web3.utils.toWei('1', 'ether');
+    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), {from: process.env.OWNER});
+    // console.log(total);
   }
 }
 

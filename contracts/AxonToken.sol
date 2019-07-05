@@ -103,31 +103,35 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
 
         uint256 precision = 10 ** uint256(decimals());
         total_revenue = total_revenue.add(_revenue);
-        
         uint256 total_community_invest = _revenue.mul(precision).div(_difficulty);
         total_invest_mined = total_invest_mined.add(total_community_invest);
 
-        uint256 total_pool = total_community_invest.mul(8).div(100);
-        uint256 total_sku = total_community_invest.sub(total_pool);
+        // Unlock 15%
+        uint256 total_team = total_community_invest.mul(15).div(70);
+        if (total_team > 0) { _mint(team_address, total_team); }
 
+        // Mine 70%
+        // To pool
+        uint256 total_pool = total_community_invest.mul(8).div(100);
         if (total_pool > 0) { _mint(pool_address, total_pool); }
+        uint256 total_sku = total_community_invest.sub(total_pool);
+        // To C
         uint256 total_sku_user = total_sku.mul(_alpha).div(precision);
-        // _mint(c_address, total_sku_user);
+        // To B
         uint256 total_sku_project = total_sku.sub(total_sku_user);
         if (total_sku_project > 0) { _mint(b_address, total_sku_project); }
 
+        // Unlock 1.3%
         uint256 total_community_vote = total_community_invest.div(10);
-        uint256 next = total_community_vote_amount.add(total_community_vote);
-        if (next <= cap().mul(13).div(1000)) {
-            total_community_vote_amount = next;
+        if (total_community_vote >= cap().mul(13).div(1000).sub(total_community_vote_amount)) {
+            total_community_vote = cap().mul(13).div(1000).sub(total_community_vote_amount);
+            total_community_vote_amount = cap().mul(13).div(1000);
         } else {
-            total_community_vote = 0;
+            total_community_vote_amount = total_community_vote.add(total_community_vote_amount);
         }
+
         uint256 c_amount = total_community_vote.add(total_sku_user);
         if (c_amount > 0) { _mint(c_address, c_amount); }
-
-        uint256 total_team = total_community_invest.mul(15).div(70);
-        if (total_team > 0) { _mint(team_address, total_team); }
 
         uint256 total_mined = total_community_invest.add(total_community_vote).add(total_team);
         emit LogRevenue(_difficulty, _revenue, _alpha, total_mined, total_community_invest);

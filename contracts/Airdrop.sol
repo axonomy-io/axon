@@ -27,8 +27,7 @@ contract Airdrop is Initializable, Ownable, Whitelisted {
     }
 
     function multisend(address _token_address, address[] memory _recipients, uint256[] memory _values)
-    public onlyWhitelisted returns (uint256)
-    {
+    public onlyWhitelisted returns (uint256) {
         require(_token_address != address(0));
         require(_recipients.length == _values.length);
         require(_recipients.length > 0);

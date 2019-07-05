@@ -181,6 +181,15 @@ contract('AxonToken', async(accounts) => {
       } catch(err) { }
       assert.equal(false, hasError);
     });
+
+    it('Can not exceed the upper cap', async function() {
+      var hasError = true;
+      try {
+        await this.token.mine(toHex(1), toHex(700000000), toHex(1), {from: process.env.OWNER});
+        hasError = false;
+      } catch(err) { }
+      assert.equal(true, hasError);
+    });
   });
 
 
