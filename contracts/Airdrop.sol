@@ -37,6 +37,11 @@ contract Airdrop is Initializable, Ownable, Whitelisted {
         uint256 total = 0;
         uint256 i = 0;
         while (i < _recipients.length) {
+            if (_recipients[i] == address(0)) {
+                i += 1;
+                continue;
+            }
+
             bool result = token.transferFrom(msg.sender, _recipients[i], uint256(_values[i]));
             emit LogSendToken(_token_address, _recipients[i], _values[i], result);
             if (result == false) { break; }

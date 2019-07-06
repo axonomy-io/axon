@@ -19,8 +19,8 @@ const address = {
     'Airdrop': '0x8Cf74994e7fD7A5756b7F3FEA06202FB4330b2E5'
   },
   'local': {
-    'AxonToken': '0x7200366fdd50AD7c7dD7f40c8719a2A66FCEd50f',
-    'Airdrop': '0x0e165Ce7162bd4663Bc7d66c6eFbF3Ddcbf2adD9'
+    'AxonToken': '0x732899c29Ae114faE8Bf9feE57Bf0503A18bcB05',
+    'Airdrop': '0xac679fdEAfe5cBB1C83db94D8c8A524Dbb63c85e'
   }
 };
 
@@ -140,7 +140,7 @@ async function main() {
     let revenue = web3.utils.toWei('11021.7688702927', 'ether');
     let difficulty = web3.utils.toWei('0.028888', 'ether');
     let alpha = web3.utils.toWei('1', 'ether');
-    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), {from: process.env.OWNER});
+    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), 0, {from: process.env.OWNER});
     // console.log(total);
   }
 
@@ -148,7 +148,7 @@ async function main() {
     let revenue = web3.utils.toWei('50000000', 'ether');
     let difficulty = web3.utils.toWei('5', 'ether');
     let alpha = web3.utils.toWei('1', 'ether');
-    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), {from: process.env.OWNER});
+    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), 0, {from: process.env.OWNER});
     // console.log(total);
   }
 }

@@ -20,9 +20,10 @@ contract('AxonToken', async(accounts) => {
   const _pool_address       = process.env.POOL_ADDRESS;
   const _b_address          = process.env.B_ADDRESS;
   
-  const _difficulty         = toWei(3.14);
-  const _revenue            = toWei(3.14 * 70);
+  const _difficulty         = toWei(0.028888);
+  const _revenue            = toWei(0.028888 * 70);
   const _alpha              = toWei(0.5);
+  const _staking_cnt        = 0;
 
   beforeEach(async function () {
     this.token = await AxonToken.deployed();
@@ -61,6 +62,23 @@ contract('AxonToken', async(accounts) => {
       assert.equal(cap.toString(), `${_total}`);
     });
 
+    it('has staking mine rate', async function() {
+      let ret = await this.token.get_staking_mine_rate();
+      assert.equal(ret.toString(), '0');
+
+      let rate = toWei(0.016);
+      await this.token.set_staking_mine_rate(toHex(rate), {from: process.env.OWNER});
+      ret = await this.token.get_staking_mine_rate();
+      assert.equal(ret.toString(), rate.toFixed());
+
+      var hasError = true;
+      try {
+        await this.token.set_staking_mine_rate(toHex(rate), {from: process.env.OP_ADDRESS});
+        hasError = false;
+      } catch(err) { }
+      assert.equal(true, hasError);
+    });
+
     it('has the correct init supply', async function() {
       const total = await this.token.totalSupply();
       const expected_total = BigNumber('0.137e+27');
@@ -76,10 +94,9 @@ contract('AxonToken', async(accounts) => {
     });
   });
 
-
   describe('mining actions', function() {
     it('percentage should be correct', async function() {
-      await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), {from: process.env.OWNER});
+      await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OWNER});
 
       let current_difficulty = await this.token.current_difficulty();
       assert.equal(current_difficulty.toString(), _difficulty.toFixed());
@@ -134,7 +151,7 @@ contract('AxonToken', async(accounts) => {
     });
 
     it('should emit revenue event', async function() {
-      const { logs } = await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), {from: process.env.OWNER});
+      const { logs } = await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OWNER});
       const total_mined = toWei(92);
       assert.equal(logs.length, 5, 'No Revenue Event emitted');
       // console.log(logs[4]);
@@ -164,7 +181,7 @@ contract('AxonToken', async(accounts) => {
       }
       var hasError = true;
       try {
-        await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), {from: process.env.OP_ADDRESS});
+        await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OP_ADDRESS});
         hasError = false;
       } catch(err) { }
       assert.equal(true, hasError, "invalid address");
@@ -176,7 +193,7 @@ contract('AxonToken', async(accounts) => {
       assert.equal(result, true, 'add failed');
       var hasError = true;
       try {
-        await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), {from: process.env.OP_ADDRESS});
+        await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OP_ADDRESS});
         hasError = false;
       } catch(err) { }
       assert.equal(false, hasError);
@@ -185,13 +202,12 @@ contract('AxonToken', async(accounts) => {
     it('Can not exceed the upper cap', async function() {
       var hasError = true;
       try {
-        await this.token.mine(toHex(1), toHex(700000000), toHex(1), {from: process.env.OWNER});
+        await this.token.mine(toHex(1), toHex(700000000), toHex(1), toHex(_staking_cnt), {from: process.env.OWNER});
         hasError = false;
       } catch(err) { }
       assert.equal(true, hasError);
     });
   });
-
 
   describe('token transfer', function() {
     it('should transfer right token', async function() {
@@ -258,6 +274,26 @@ contract('AxonToken', async(accounts) => {
       const balance_after = await this.token.balanceOf(process.env.C_ADDRESS);
       const balance = balance_after - balance_before;
       assert.equal(balance.toString(), amount.toFixed());
+    });
+  });
+
+  describe('staking actions', function() {
+    it('mined by staking correctly', async function() {
+      let rate = toWei(0.016);
+      await this.token.set_staking_mine_rate(toHex(rate), {from: process.env.OWNER});
+      ret = await this.token.get_staking_mine_rate();
+      assert.equal(ret.toString(), rate.toFixed());
+
+      // 70*2/0.016*10^18
+      let staking_cnt = BigNumber(_revenue).div(_difficulty).times(2).times(toWei(1)).div(rate).times(toWei(1));
+      const { logs } = await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(staking_cnt), {from: process.env.OWNER});
+      const staking_mined = BigNumber(_revenue).div(_difficulty).times(2).times(toWei(1));
+      assert.equal(logs.length, 6, 'No Revenue Event emitted');
+      assert.equal(logs[0].event, 'LogStaking');
+      assert.equal(logs[0].args.staking_mined.toString(), staking_mined.toFixed());
+      assert.equal(logs[0].args.difficulty.toString(), _difficulty.toFixed());
+      assert.equal(logs[0].args.revenue.toString(), _revenue.toFixed());
+      assert.equal(logs[0].args.alpha.toString(), _alpha.toFixed());
     });
   });
 });
