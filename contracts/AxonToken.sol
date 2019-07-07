@@ -10,12 +10,15 @@ import "./Whitelisted.sol";
 
 contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, Ownable, Whitelisted {
     // Run paras
-    uint256 private total_revenue;
-    uint256 private total_invest_mined;
-    uint256 private total_community_vote_amount;
-    uint256[] public difficulty_list;
-    uint256 public current_difficulty;
-    uint256 private staking_mine_rate;
+    struct Setting {
+        uint256 staking_mine_rate;
+        uint256 total_revenue;
+        uint256 total_invest_mined;
+        uint256 total_community_vote_amount;
+        uint256 current_difficulty;
+        uint256[] difficulty_list;
+    }
+    Setting private setting;
 
     // Token Distribution and Pool Address
     // op_percentage               : 3.7%
@@ -23,12 +26,6 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
     // team_percentage             : 15%
     // mining_percentage           : 70%
     // vote_percentage             : 1.3%
-    address private op_address;
-    address private foundation_address;
-    address private team_address;
-    address private c_address;
-    address private pool_address;
-    address private b_address;
     struct AddressPool {
         address op_address;
         address foundation_address;
@@ -36,9 +33,8 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         address c_address;
         address pool_address;
         address b_address;
-    };
+    }
     AddressPool private address_pool;
-
 
     // Event
     event LogRevenue(uint256 difficulty, uint256 revenue, uint256 alpha, uint256 total_mined, uint256 invest_mined);
@@ -52,28 +48,28 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
     ) public initializer {
         require(_cap > 0);
         require(_owner_address != address(0));
+
         Ownable.initialize(_owner_address);
         Whitelisted.initialize(_owner_address);
-
-        total_community_vote_amount = 0;
-        total_invest_mined          = 0;
-        total_revenue               = 0;
-        current_difficulty          = 0;
-        staking_mine_rate           = 0;
-
         ERC20Capped.initialize(_cap, _owner_address);
         ERC20Pausable.initialize(_owner_address);
         ERC20Detailed.initialize(_name, _symbol, _decimals);
-        
-        op_address = _op_address;
-        foundation_address = _foundation_address;
-        team_address = _team_address;
-        c_address = _c_address;
-        pool_address = _pool_address;
-        b_address = _b_address;
 
-        _mint(op_address, _cap.mul(37).div(1000)); // 3.7%
-        _mint(foundation_address, _cap.mul(100).div(1000)); // 10%
+        setting.total_community_vote_amount = 0;
+        setting.total_invest_mined          = 0;
+        setting.total_revenue               = 0;
+        setting.current_difficulty          = 0;
+        setting.staking_mine_rate           = 0;
+        
+        address_pool.op_address = _op_address;
+        address_pool.foundation_address = _foundation_address;
+        address_pool.team_address = _team_address;
+        address_pool.c_address = _c_address;
+        address_pool.pool_address = _pool_address;
+        address_pool.b_address = _b_address;
+
+        _mint(address_pool.op_address, _cap.mul(37).div(1000)); // 3.7%
+        _mint(address_pool.foundation_address, _cap.mul(100).div(1000)); // 10%
     }
 
 
@@ -83,27 +79,39 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
 
 
     function revenue() public view returns (uint256) {
-        return total_revenue;
+        return setting.total_revenue;
     }
 
 
     function invest_mined() public view returns (uint256) {
-        return total_invest_mined;
+        return setting.total_invest_mined;
     }
 
 
     function get_difficulty_list() public view returns (uint256[] memory) {
-        return difficulty_list;
+        return setting.difficulty_list;
     }
 
 
     function get_staking_mine_rate() public view returns (uint256) {
-        return staking_mine_rate;
+        return setting.staking_mine_rate;
     }
 
     function set_staking_mine_rate(uint256 _rate) public onlyOwner returns (bool) {
-        if (staking_mine_rate != _rate) {
-            staking_mine_rate = _rate;
+        if (setting.staking_mine_rate != _rate) {
+            setting.staking_mine_rate = _rate;
+            return true;
+        }
+        return false;
+    }
+
+    function get_current_difficulty() public view returns (uint256) {
+        return setting.current_difficulty;
+    }
+
+    function set_current_difficulty(uint256 _difficulty) public onlyOwner returns (bool) {
+        if (setting.current_difficulty != _difficulty) {
+            setting.current_difficulty = _difficulty;
             return true;
         }
         return false;
@@ -123,60 +131,58 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         require(_revenue > _difficulty);
         require(_staking_cnt >= 0);
         require(_alpha >= 0);
-        require(_difficulty >= current_difficulty);
+        require(_difficulty >= setting.current_difficulty);
 
-        if (current_difficulty != _difficulty) {
-            difficulty_list.push(_difficulty);
+        if (setting.current_difficulty != _difficulty) {
+            setting.difficulty_list.push(_difficulty);
         }
-        current_difficulty = _difficulty;
-        total_revenue = total_revenue.add(_revenue);
+        setting.current_difficulty = _difficulty;
+        setting.total_revenue = setting.total_revenue.add(_revenue);
 
         // Mined by investing
         uint256 total_community_invest = _revenue.mul(10 ** uint256(decimals())).div(_difficulty);
         // Mined by staking
-        if (_staking_cnt > 0 && staking_mine_rate > 0) {
-            if (_staking_cnt >= total_community_invest.mul(2).mul(10 ** uint256(decimals())).div(staking_mine_rate)) {
+        if (_staking_cnt > 0 && setting.staking_mine_rate > 0) {
+            if (_staking_cnt >= total_community_invest.mul(2).mul(10 ** uint256(decimals())).div(setting.staking_mine_rate)) {
                 emit LogStaking(_difficulty, _revenue, _alpha, total_community_invest.mul(2));
                 total_community_invest = total_community_invest.mul(3);
             }
         }
-        total_invest_mined = total_invest_mined.add(total_community_invest);
+        setting.total_invest_mined = setting.total_invest_mined.add(total_community_invest);
 
         // Unlock 15%
         if (total_community_invest.mul(15).div(70) > 0) {
-            _mint(team_address, total_community_invest.mul(15).div(70));
+            _mint(address_pool.team_address, total_community_invest.mul(15).div(70));
         }
 
         // Mine 70%
         // To pool
         if (total_community_invest.mul(8).div(100) > 0) {
-            _mint(pool_address, total_community_invest.mul(8).div(100));
+            _mint(address_pool.pool_address, total_community_invest.mul(8).div(100));
         }
         // To C
         uint256 total_sku_user = total_community_invest.mul(92).div(100).mul(_alpha).div(10 ** uint256(decimals()));
         // To B
         if (total_community_invest.mul(92).div(100).sub(total_sku_user) > 0) {
-            _mint(b_address, total_community_invest.mul(92).div(100).sub(total_sku_user));
+            _mint(address_pool.b_address, total_community_invest.mul(92).div(100).sub(total_sku_user));
         }
 
         // Unlock 1.3%
         uint256 total_community_vote = total_community_invest.div(10);
-        if (total_community_vote >= cap().mul(13).div(1000).sub(total_community_vote_amount)) { // 1.3%
-            total_community_vote = cap().mul(13).div(1000).sub(total_community_vote_amount);
-            total_community_vote_amount = cap().mul(13).div(1000);
+        if (total_community_vote >= cap().mul(13).div(1000).sub(setting.total_community_vote_amount)) { // 1.3%
+            total_community_vote = cap().mul(13).div(1000).sub(setting.total_community_vote_amount);
+            setting.total_community_vote_amount = cap().mul(13).div(1000);
         } else {
-            total_community_vote_amount = total_community_vote.add(total_community_vote_amount);
+            setting.total_community_vote_amount = total_community_vote.add(setting.total_community_vote_amount);
         }
         if (total_community_vote.add(total_sku_user) > 0) {
-            _mint(c_address, total_community_vote.add(total_sku_user));
+            _mint(address_pool.c_address, total_community_vote.add(total_sku_user));
         }
 
         // emit LogRevenue(_difficulty, _revenue, _alpha, total_community_invest.add(total_community_vote).add(total_community_invest.mul(15).div(70)), total_community_invest);
         // return total_community_invest.add(total_community_vote).add(total_community_invest.mul(15).div(70));
     }
 
-
-    /* 
     function multisend(address[] memory _recipients, uint256[] memory _values)
     public returns (uint256) {
         require(_recipients.length == _values.length);
@@ -206,5 +212,4 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         require(value > 0);
         return transfer(address(0), value);
     }
-    */
 }

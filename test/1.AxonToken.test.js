@@ -98,7 +98,7 @@ contract('AxonToken', async(accounts) => {
     it('percentage should be correct', async function() {
       await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OWNER});
 
-      let current_difficulty = await this.token.current_difficulty();
+      let current_difficulty = await this.token.get_current_difficulty();
       assert.equal(current_difficulty.toString(), _difficulty.toFixed());
       
       let difficulty_list = await this.token.get_difficulty_list();
