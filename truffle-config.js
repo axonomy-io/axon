@@ -35,8 +35,8 @@ module.exports = {
       // https://faucet.ropsten.be/
       provider: () => new HDWalletProvider([process.env.OWNER_PRI, process.env.PROXY_PRI, process.env.C_PRI, process.env.B_PRI, process.env.OP_PRI, process.env.TEAM_PRI], `https://ropsten.infura.io/v3/${process.env.INFURA_KEY}`, 0, 6),
       network_id: 3,
-      gasPrice: web3.utils.toWei('60', 'gwei'),
-      gas: 4600000,
+      gasPrice: web3.utils.toWei('20', 'gwei'),
+      // gas: 4600000,
       skipDryRun: true
     },
     'rinkeby': {
@@ -53,7 +53,7 @@ module.exports = {
       provider: () => new HDWalletProvider([process.env.OWNER_PRI, process.env.PROXY_PRI, process.env.C_PRI, process.env.B_PRI, process.env.OP_PRI, process.env.TEAM_PRI], `https://kovan.infura.io/v3/${process.env.INFURA_KEY}`, 0, 6),
       network_id: 42,
       gasPrice: web3.utils.toWei('20', 'gwei'),
-      gas: 4600000,
+      // gas: 4600000,
       skipDryRun: true
     },
     'mainnet': {

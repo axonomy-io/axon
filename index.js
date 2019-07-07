@@ -7,16 +7,16 @@ require('dotenv').config();
 
 const address = {
   'ropsten': {
-    'AxonToken': '0x6eC9314C55847Ef7AE8a42547C9988c7201d3B91',
-    'Airdrop': '0x8171ba253D472dc872402d8Ac6484bb6e01136ab'
+    'AxonToken': '0x325aA6f9AC9D458A0B5259836F13c5cB34f16336',
+    'Airdrop': '0x6dA6941f6cf6a235F6f2C1B14dfC2427E57D917b'
   },
   'mainnet': {
     'AxonToken': '0x4F2742D3BF257035caE4666e0a6fed67713e0CC5',
     'Airdrop': '0x8E6217dBFb6c810e8Eb378789F06871af91Bd108'
   },
   'kovan': {
-    'AxonToken': '0x122c7ECf66CE4CE5D9e1eF97291aC5Dea1D478a8',
-    'Airdrop': '0x8Cf74994e7fD7A5756b7F3FEA06202FB4330b2E5'
+    'AxonToken': '0x421125361cF5881ef59e9D265542AB94752868D3',
+    'Airdrop': '0xC3A8952658AFD1678c553947f40112e995f93De3'
   },
   'local': {
     'AxonToken': '0x732899c29Ae114faE8Bf9feE57Bf0503A18bcB05',
@@ -84,7 +84,7 @@ async function meta(AxonTokenInstance, AirdropInstance, network) {
   let mined_percentage = await minedPercentage(AxonTokenInstance);
   console.log(`Mined percentage:   ${mined_percentage}%`);
 
-  let current_difficulty = await AxonTokenInstance.current_difficulty();
+  let current_difficulty = await AxonTokenInstance.get_current_difficulty();
   console.log(`Current difficulty: ${current_difficulty}`);
   let difficulty_list = await AxonTokenInstance.get_difficulty_list();
   for (let item of difficulty_list) {

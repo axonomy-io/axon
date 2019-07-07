@@ -96,7 +96,7 @@ contract('AxonToken', async(accounts) => {
 
   describe('mining actions', function() {
     it('percentage should be correct', async function() {
-      await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OWNER});
+      await this.token.mine([toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt)], {from: process.env.OWNER});
 
       let current_difficulty = await this.token.get_current_difficulty();
       assert.equal(current_difficulty.toString(), _difficulty.toFixed());
@@ -151,7 +151,7 @@ contract('AxonToken', async(accounts) => {
     });
 
     it('should emit revenue event', async function() {
-      const { logs } = await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OWNER});
+      const { logs } = await this.token.mine([toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt)], {from: process.env.OWNER});
       const total_mined = toWei(92);
       assert.equal(logs.length, 5, 'No Revenue Event emitted');
       // console.log(logs[4]);
@@ -181,7 +181,7 @@ contract('AxonToken', async(accounts) => {
       }
       var hasError = true;
       try {
-        await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OP_ADDRESS});
+        await this.token.mine([toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt)], {from: process.env.OP_ADDRESS});
         hasError = false;
       } catch(err) { }
       assert.equal(true, hasError, "invalid address");
@@ -193,7 +193,7 @@ contract('AxonToken', async(accounts) => {
       assert.equal(result, true, 'add failed');
       var hasError = true;
       try {
-        await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt), {from: process.env.OP_ADDRESS});
+        await this.token.mine([toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(_staking_cnt)], {from: process.env.OP_ADDRESS});
         hasError = false;
       } catch(err) { }
       assert.equal(false, hasError);
@@ -202,7 +202,7 @@ contract('AxonToken', async(accounts) => {
     it('Can not exceed the upper cap', async function() {
       var hasError = true;
       try {
-        await this.token.mine(toHex(1), toHex(700000000), toHex(1), toHex(_staking_cnt), {from: process.env.OWNER});
+        await this.token.mine([toHex(1), toHex(700000000), toHex(1), toHex(_staking_cnt)], {from: process.env.OWNER});
         hasError = false;
       } catch(err) { }
       assert.equal(true, hasError);
@@ -286,7 +286,7 @@ contract('AxonToken', async(accounts) => {
 
       // 70*2/0.016*10^18
       let staking_cnt = BigNumber(_revenue).div(_difficulty).times(2).times(toWei(1)).div(rate).times(toWei(1));
-      const { logs } = await this.token.mine(toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(staking_cnt), {from: process.env.OWNER});
+      const { logs } = await this.token.mine([toHex(_difficulty), toHex(_revenue), toHex(_alpha), toHex(staking_cnt)], {from: process.env.OWNER});
       const staking_mined = BigNumber(_revenue).div(_difficulty).times(2).times(toWei(1));
       assert.equal(logs.length, 6, 'No Revenue Event emitted');
       assert.equal(logs[0].event, 'LogStaking');
