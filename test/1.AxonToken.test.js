@@ -1,9 +1,6 @@
 const BigNumber = require("bignumber.js");
 const { toHex } = web3.utils;
 const AxonToken = artifacts.require('AxonToken');
-const mlog = require('mocha-logger');
-// mlog.log(util.inspect(transfer));
-
 
 require('dotenv').config();
 require('chai').use(require('chai-bignumber')(BigNumber)).should();
@@ -62,7 +59,42 @@ contract('AxonToken', async(accounts) => {
       assert.equal(cap.toString(), `${_total}`);
     });
 
-    it('has staking mine rate', async function() {
+    it('has the correct init supply', async function() {
+      const total = await this.token.totalSupply();
+      const expected_total = BigNumber('0.137e+27');
+      assert.equal(total.toString(), expected_total.toFixed());
+
+      const balance_op = await this.token.balanceOf(_op_address);
+      const expected_op = BigNumber('0.037e+27');
+      assert.equal(balance_op.toString(), expected_op.toFixed());
+
+      const balance_foundation = await this.token.balanceOf(_foundation_address);
+      const expected_foundation = BigNumber('0.1e+27');
+      assert.equal(balance_foundation.toString(), expected_foundation.toFixed());
+    });
+
+    it('the config of address pool is correct', async function() {
+      const pool = await this.token.get_address_pool();
+      assert.equal(pool.length, 6);
+      assert.equal(pool[0].toLowerCase(), process.env.OP_ADDRESS.toLowerCase());
+      assert.equal(pool[1].toLowerCase(), process.env.FOUNDATION_ADDRESS.toLowerCase());
+      assert.equal(pool[2].toLowerCase(), process.env.TEAM_ADDRESS.toLowerCase());
+      assert.equal(pool[3].toLowerCase(), process.env.C_ADDRESS.toLowerCase());
+      assert.equal(pool[4].toLowerCase(), process.env.POOL_ADDRESS.toLowerCase());
+      assert.equal(pool[5].toLowerCase(), process.env.B_ADDRESS.toLowerCase());
+    });
+
+    it('the config of setting is correct', async function() {
+      const info = await this.token.get_setting();
+      assert.equal(info.length, 5);
+      assert.equal(info[0].toString(), `0`);
+      assert.equal(info[1].toString(), `0`);
+      assert.equal(info[2].toString(), `0`);
+      assert.equal(info[3].toString(), `0`);
+      assert.equal(info[4].toString(), `0`);
+    });
+
+    it('has the correct staking mine rate', async function() {
       let ret = await this.token.get_staking_mine_rate();
       assert.equal(ret.toString(), '0');
 
@@ -77,20 +109,11 @@ contract('AxonToken', async(accounts) => {
         hasError = false;
       } catch(err) { }
       assert.equal(true, hasError);
-    });
 
-    it('has the correct init supply', async function() {
-      const total = await this.token.totalSupply();
-      const expected_total = BigNumber('0.137e+27');
-      assert.equal(total.toString(), expected_total.toFixed());
-
-      const balance_op = await this.token.balanceOf(_op_address);
-      const expected_op = BigNumber('0.037e+27');
-      assert.equal(balance_op.toString(), expected_op.toFixed());
-
-      const balance_foundation = await this.token.balanceOf(_foundation_address);
-      const expected_foundation = BigNumber('0.1e+27');
-      assert.equal(balance_foundation.toString(), expected_foundation.toFixed());
+      rate = toWei(0);
+      await this.token.set_staking_mine_rate(toHex(rate), {from: process.env.OWNER});
+      ret = await this.token.get_staking_mine_rate();
+      assert.equal(ret.toString(), rate.toFixed());
     });
   });
 
@@ -146,7 +169,7 @@ contract('AxonToken', async(accounts) => {
       const expected_total = BigNumber('0.137e+27').plus('92e+18');
       assert.equal(total.toString(), expected_total.toFixed());
 
-      const total_revenue = await this.token.revenue();
+      const total_revenue = await this.token.get_revenue();
       assert.equal(total_revenue.toString(), _revenue.toFixed());
     });
 
@@ -227,11 +250,11 @@ contract('AxonToken', async(accounts) => {
       const amount = toWei(50);
 
       const balance_before = await this.token.balanceOf(to_address);
-      await this.token.multisend([to_address], [toHex(amount)], {from: process.env.OP_ADDRESS});
+      await this.token.multisend([to_address, to_address], [toHex(amount), toHex(amount)], {from: process.env.OP_ADDRESS});
       const balance_after = await this.token.balanceOf(to_address);
       const balance = balance_after - balance_before;
 
-      assert.equal(balance.toString(), amount.toFixed());
+      assert.equal(balance.toString(), BigNumber(amount).times(2).toFixed());
     });
 
     it('it should not let someone transfer tokens they do not have', async function() {
@@ -294,6 +317,25 @@ contract('AxonToken', async(accounts) => {
       assert.equal(logs[0].args.difficulty.toString(), _difficulty.toFixed());
       assert.equal(logs[0].args.revenue.toString(), _revenue.toFixed());
       assert.equal(logs[0].args.alpha.toString(), _alpha.toFixed());
+    });
+  });
+
+
+  describe('burn actions', function() {
+    it('burn correctly', async function() {
+      let cnt = toWei(100);
+
+      let total_supply_before = await this.token.totalSupply();
+      const balance_before = await this.token.balanceOf(process.env.OP_ADDRESS);
+      await this.token.burn(toHex(cnt), {from: process.env.OP_ADDRESS});
+      const balance_after = await this.token.balanceOf(process.env.OP_ADDRESS);
+      let total_supply_after = await this.token.totalSupply();
+
+      const balance = BigNumber(balance_before).minus(balance_after);
+      assert.equal(balance.toString(), cnt.toFixed());
+
+      const total_supply = BigNumber(total_supply_before).minus(total_supply_after);
+      assert.equal(total_supply.toString(), cnt.toFixed());
     });
   });
 });

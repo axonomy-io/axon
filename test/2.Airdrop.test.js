@@ -2,7 +2,7 @@ const BigNumber = require("bignumber.js");
 const { toHex } = web3.utils;
 const Airdrop = artifacts.require('Airdrop');
 const AxonToken = artifacts.require('AxonToken');
-const mlog = require('mocha-logger');
+// const mlog = require('mocha-logger');
 // mlog.log(util.inspect(transfer));
 
 require('dotenv').config();

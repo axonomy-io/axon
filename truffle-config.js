@@ -44,7 +44,7 @@ module.exports = {
       provider: () => new HDWalletProvider([process.env.OWNER_PRI, process.env.PROXY_PRI, process.env.C_PRI, process.env.B_PRI, process.env.OP_PRI, process.env.TEAM_PRI], `https://rinkeby.infura.io/v3/${process.env.INFURA_KEY}`, 0, 6),
       network_id: 4,
       gasPrice: web3.utils.toWei('20', 'gwei'),
-      gas: 4600000,
+      // gas: 4600000,
       skipDryRun: true
     },
     'kovan': {
@@ -60,7 +60,7 @@ module.exports = {
       provider: () => new HDWalletProvider([process.env.OWNER_PRI, process.env.PROXY_PRI, process.env.C_PRI, process.env.B_PRI, process.env.OP_PRI, process.env.TEAM_PRI], `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`, 0, 6),
       network_id: 1,
       gasPrice: web3.utils.toWei('20', 'gwei'),
-      gas: 4600000,
+      // gas: 4600000,
       skipDryRun: true
     }
   }

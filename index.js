@@ -6,17 +6,17 @@ const BigNumber = require("bignumber.js");
 require('dotenv').config();
 
 const address = {
-  'ropsten': {
-    'AxonToken': '0x325aA6f9AC9D458A0B5259836F13c5cB34f16336',
-    'Airdrop': '0x6dA6941f6cf6a235F6f2C1B14dfC2427E57D917b'
-  },
   'mainnet': {
-    'AxonToken': '0x4F2742D3BF257035caE4666e0a6fed67713e0CC5',
-    'Airdrop': '0x8E6217dBFb6c810e8Eb378789F06871af91Bd108'
+    'AxonToken': '0x423A9f4a87D3fC7030D0881c7805373cB1AC3732',
+    'Airdrop': '0x9A4039b1F07526e7394e8f0c451FCf31Ce84Ad1C'
+  },
+  'ropsten': {
+    'AxonToken': '0xd0027387d7119671cfa761085E6C5628BE33EC38',
+    'Airdrop': '0x1460e4BCD2DAa0716EaF86A25E6Bc06c4279f191'
   },
   'kovan': {
-    'AxonToken': '0x421125361cF5881ef59e9D265542AB94752868D3',
-    'Airdrop': '0xC3A8952658AFD1678c553947f40112e995f93De3'
+    'AxonToken': '0xeB740Ee7D1F58eFb7dCa1DC1d169672d58A46CD9',
+    'Airdrop': '0xfa93De65E99cb18205F37A4f2AB69098EBe64E05'
   },
   'local': {
     'AxonToken': '0x732899c29Ae114faE8Bf9feE57Bf0503A18bcB05',
@@ -71,7 +71,7 @@ async function TokenTransfer(contract_instance, from_address, to_address, amount
 
 
 async function minedPercentage(AxonTokenInstance) {
-  let total = await AxonTokenInstance.invest_mined();
+  let total = await AxonTokenInstance.get_invest_mined();
   let mined_percentage = BigNumber(total).times(100).div('1e+18').div('7e+8');
   return parseFloat(mined_percentage.toString()).toFixed(4);
 }
@@ -136,11 +136,11 @@ async function main() {
   }
 
   // Mine
-  if (network === 'kovan') {
+  if (network === 'local') {
     let revenue = web3.utils.toWei('11021.7688702927', 'ether');
     let difficulty = web3.utils.toWei('0.028888', 'ether');
     let alpha = web3.utils.toWei('1', 'ether');
-    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), 0, {from: process.env.OWNER});
+    let total = await AxonTokenInstance.mine([toHex(difficulty), toHex(revenue), toHex(alpha), 0], {from: process.env.OWNER});
     // console.log(total);
   }
 
@@ -148,7 +148,7 @@ async function main() {
     let revenue = web3.utils.toWei('50000000', 'ether');
     let difficulty = web3.utils.toWei('5', 'ether');
     let alpha = web3.utils.toWei('1', 'ether');
-    let total = await AxonTokenInstance.mine(toHex(difficulty), toHex(revenue), toHex(alpha), 0, {from: process.env.OWNER});
+    let total = await AxonTokenInstance.mine([toHex(difficulty), toHex(revenue), toHex(alpha), 0], {from: process.env.OWNER});
     // console.log(total);
   }
 }

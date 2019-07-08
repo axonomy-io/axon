@@ -4,11 +4,12 @@ import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20Pausable.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20Capped.sol";
+import "openzeppelin-eth/contracts/token/ERC20/ERC20Burnable.sol";
 import "openzeppelin-eth/contracts/ownership/Ownable.sol";
 import "./Whitelisted.sol";
 
 
-contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, Ownable, Whitelisted {
+contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, ERC20Burnable, Ownable, Whitelisted {
     // Run paras
     // 0 total_vote_amount
     // 1 total_invest_mined
@@ -68,18 +69,15 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         _mint(address_pool[1], _cap.mul(100).div(1000)); // 10%
     }
 
-
     function version() public pure returns (string memory) {
         return "v0";
     }
 
-
-    function revenue() public view returns (uint256) {
+    function get_revenue() public view returns (uint256) {
         return setting[2];
     }
 
-
-    function invest_mined() public view returns (uint256) {
+    function get_invest_mined() public view returns (uint256) {
         return setting[1];
     }
 
@@ -128,7 +126,7 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
      */
     function mine(uint256[] memory paras) public onlyWhitelisted returns (uint256) {
         uint256 precision = 10 ** uint256(decimals());
-        require(paras.length >= 4);
+        require(paras.length == 4);
         require(paras[0] >= setting[3]);
         require(paras[0] > 0);
         require(paras[1] > paras[0]);
@@ -207,10 +205,5 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         }
         emit LogTokenMultiSent(msg.sender, total);
         return i;
-    }
-
-    function axonburn(uint256 value) public returns (bool) {
-        require(value > 0);
-        return transfer(address(0), value);
     }
 }
