@@ -99,8 +99,17 @@ async function main() {
   let AirdropInstance = await Airdrop.at(address[network]['Airdrop']);
   await meta(AxonTokenInstance, AirdropInstance, network);
 
+  // 1. Token transfer
   if (network === 'test') {
-    // 1. Whitelist Management
+    let from_address = process.env.OP_ADDRESS;
+    let to_address = '0xbFE6a4a7099e42ad300B23e3b2C8c13F5906D629';
+    let amount = web3.utils.toWei('1000000', 'ether');
+    let ret = await TokenTransfer(AxonTokenInstance, from_address, to_address, amount);
+    console.log('Transfer result:', ret);
+  }
+
+  // 2. Whitelist Management
+  if (network === 'test') {
     let white_address = process.env.PROXY;
     // Remove whitelist
     // await removeWhitelisted(AxonTokenInstance, white_address);
@@ -108,34 +117,25 @@ async function main() {
     // Add whitelist
     // await addWhitelisted(AxonTokenInstance, white_address);
     await addWhitelisted(AirdropInstance, white_address);
-
-    // 2. Token transfer
-    let from_address = process.env.OP_ADDRESS;
-    let to_address = process.env.PROXY;
-    let amount = web3.utils.toWei('1000000', 'ether');
-    let ret = await TokenTransfer(AxonTokenInstance, from_address, to_address, amount);
-    console.log('Transfer result:', ret);
-
-    // 3. Multisend Management
-    await AxonTokenInstance.approve(AirdropInstance.address, toHex(amount), {from: process.env.PROXY});
-    const allowed = await AxonTokenInstance.allowance(process.env.PROXY, AirdropInstance.address);
-    if (allowed.toString() === amount.toString()) {
-      const balance_before = await AxonTokenInstance.balanceOf(process.env.PROXY);
-      await AirdropInstance.multisend(
-        AxonTokenInstance.address,
-        ['0x6150CbCF8813e6367f1A3309D751feF512078848', '0x8AdCd1DDA4905dBe1cAa84C170bbA33b23aBd3a3'],
-        [web3.utils.toWei('400000', 'ether'), web3.utils.toWei('600000', 'ether')],
-        {from: process.env.PROXY}
-      );
-      const balance_after = await AxonTokenInstance.balanceOf(process.env.PROXY);
-      const balance = balance_before - balance_after;
-      console.log(balance.toString(), amount.toString());
-    } else {
-      console.log('Not enough allowance!');
-    }
   }
 
-  // Mine
+  // 3. Multisend Management
+  if (network === 'ropsten') {
+    let amount = web3.utils.toWei('1000000', 'ether');
+    
+    const balance_before = await AxonTokenInstance.balanceOf(process.env.OP_ADDRESS);
+    await AxonTokenInstance.multisend(
+      ['0x6150CbCF8813e6367f1A3309D751feF512078848', '0x8AdCd1DDA4905dBe1cAa84C170bbA33b23aBd3a3'],
+      [web3.utils.toWei('400000', 'ether'), web3.utils.toWei('600000', 'ether')],
+      {from: process.env.OP_ADDRESS}
+    );
+    const balance_after = await AxonTokenInstance.balanceOf(process.env.OP_ADDRESS);
+
+    const balance = balance_before - balance_after;
+    console.log(balance.toString(), amount.toString());
+  }
+
+  // 4. Mine
   if (network === 'local') {
     let revenue = web3.utils.toWei('11021.7688702927', 'ether');
     let difficulty = web3.utils.toWei('0.028888', 'ether');
