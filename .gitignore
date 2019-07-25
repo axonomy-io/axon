@@ -9,3 +9,5 @@ env_pri.sh
 makefile
 backup
 flat
+*.log
+.env
