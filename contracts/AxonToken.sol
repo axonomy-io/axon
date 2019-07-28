@@ -117,6 +117,14 @@ contract AxonToken is Initializable, ERC20Capped, ERC20Pausable, ERC20Detailed, 
         return false;
     }
 
+    function set_address_pool(uint256 _idx, address _addr) public onlyOwner returns (bool) {
+        if (_idx >= 0 && _idx <=5) {
+    	    address_pool[_idx] = _addr;        
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @dev Mined by revenue and boost by staking
      * paras[0] _difficulty Difficulty of the mining period (*10^decimals)

@@ -320,6 +320,24 @@ contract('AxonToken', async(accounts) => {
     });
   });
 
+  describe('set address pool', function() {
+    it('set address test ok', async function() {
+      let _idx = 0;
+      await this.token.set_address_pool(toHex(_idx), process.env.TEST_ADDR, {from: process.env.OWNER});
+      ret = await this.token.get_address_pool();
+      assert.equal(ret.length, 6);
+      assert.equal(ret[0].toLowerCase(), process.env.TEST_ADDR.toLowerCase());
+      
+      //recover
+      await this.token.set_address_pool(toHex(_idx), process.env.OP_ADDRESS, {from: process.env.OWNER});
+      ret = await this.token.get_address_pool();
+      assert.equal(ret.length, 6);
+      assert.equal(ret[0].toLowerCase(), process.env.OP_ADDRESS.toLowerCase());
+      // 70*2/0.016*10^18
+    });
+  });
+
+
 
   describe('burn actions', function() {
     it('burn correctly', async function() {
