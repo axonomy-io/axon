@@ -327,6 +327,14 @@ contract('AxonToken', async(accounts) => {
       ret = await this.token.get_address_pool();
       assert.equal(ret.length, 6);
       assert.equal(ret[0].toLowerCase(), process.env.TEST_ADDR.toLowerCase());
+
+      //only owner
+      var hasError = true;
+      try {
+        await this.token.set_address_pool(toHex(_idx), process.env.OP_ADDR, {from: process.env.OP_ADDRESS});
+        hasError = false;
+      } catch(err) { }
+      assert.equal(true, hasError, "only owner Faild");
       
       //recover
       await this.token.set_address_pool(toHex(_idx), process.env.OP_ADDRESS, {from: process.env.OWNER});
